@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ONLINE CODE COMPILER</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#1e1e1e;
+color:white;
+}
+
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:10px 20px;
+background:#111;
+}
+
+h1{
+color:#00ffff;
+}
+
+.controls button{
+margin-left:10px;
+padding:8px 14px;
+border:none;
+background:#00aaff;
+color:white;
+cursor:pointer;
+}
+
+.container{
+display:flex;
+height:90vh;
+}
+
+.editor{
+width:50%;
+display:flex;
+flex-direction:column;
+}
+
+.tabs{
+display:flex;
+background:#222;
+}
+
+.tabs button{
+flex:1;
+padding:10px;
+background:#333;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+.code-container{
+flex:1;
+display:flex;
+}
+
+.lines{
+background:#000;
+color:#888;
+padding:10px;
+text-align:right;
+user-select:none;
+}
+
+textarea{
+flex:1;
+background:#111;
+color:#00ff9c;
+border:none;
+padding:10px;
+font-family:monospace;
+resize:none;
+}
+
+.hidden{
+display:none;
+}
+
+.preview{
+flex:1;
+background:white;
+display:flex;
+flex-direction:column;
+}
+
+iframe{
+flex:1;
+border:none;
+}
+
+.console{
+height:120px;
+background:black;
+color:#0f0;
+padding:10px;
+font-family:monospace;
+overflow:auto;
+}
+
+.light{
+background:white;
+color:black;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>ONLINE CODE COMPILER</h1>
+
+<div class="controls">
+<button onclick="runCode()">Run</button>
+<button onclick="clearCode()">Clear</button>
+<button onclick="downloadCode()">Download</button>
+<button onclick="toggleTheme()">Theme</button>
+</div>
+
+</header>
+
+<div class="container">
+
+<div class="editor">
+
+<div class="tabs">
+<button onclick="openTab('html')">HTML</button>
+<button onclick="openTab('css')">CSS</button>
+<button onclick="openTab('js')">JS</button>
+</div>
+
+<div class="code-container">
+<div class="lines" id="lines">1</div>
+<textarea id="html" oninput="updateLines(this)"></textarea>
+</div>
+
+<div class="code-container hidden" id="cssBox">
+<div class="lines">1</div>
+<textarea id="css"></textarea>
+</div>
+
+<div class="code-container hidden" id="jsBox">
+<div class="lines">1</div>
+<textarea id="js"></textarea>
+</div>
+
+</div>
+
+<div class="preview">
+
+<iframe id="output"></iframe>
+
+<div class="console" id="console">
+Console Output
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let current="html";
+
+function openTab(tab){
+
+document.querySelectorAll(".code-container").forEach(e=>e.classList.add("hidden"));
+
+if(tab==="html"){
+document.querySelectorAll(".code-container")[0].classList.remove("hidden");
+}
+if(tab==="css"){
+document.getElementById("cssBox").classList.remove("hidden");
+}
+if(tab==="js"){
+document.getElementById("jsBox").classList.remove("hidden");
+}
+
+current=tab;
+
+}
+
+function runCode(){
+
+let html=document.getElementById("html").value;
+let css=document.getElementById("css").value;
+let js=document.getElementById("js").value;
+
+localStorage.setItem("html",html);
+localStorage.setItem("css",css);
+localStorage.setItem("js",js);
+
+let output=document.getElementById("output");
+
+let code=
+"<html><head><style>"+css+"</style></head><body>"+html+
+"<script>console.log=function(msg){parent.postMessage(msg,'*')}<\/script>"+
+"<script>"+js+"<\/script></body></html>";
+
+output.contentDocument.open();
+output.contentDocument.write(code);
+output.contentDocument.close();
+
+}
+
+window.addEventListener("message",function(e){
+document.getElementById("console").innerHTML+= "<br>"+e.data;
+});
+
+function clearCode(){
+
+document.getElementById("html").value="";
+document.getElementById("css").value="";
+document.getElementById("js").value="";
+document.getElementById("console").innerHTML="Console cleared";
+
+}
+
+function toggleTheme(){
+document.body.classList.toggle("light");
+}
+
+function downloadCode(){
+
+let html=document.getElementById("html").value;
+let css=document.getElementById("css").value;
+let js=document.getElementById("js").value;
+
+let file=
+"<html><head><style>"+css+"</style></head><body>"+html+
+"<script>"+js+"<\/script></body></html>";
+
+let blob=new Blob([file],{type:"text/html"});
+let a=document.createElement("a");
+
+a.href=URL.createObjectURL(blob);
+a.download="project.html";
+a.click();
+
+}
+
+function updateLines(textarea){
+
+let lines=textarea.value.split("\n").length;
+
+let nums="";
+for(let i=1;i<=lines;i++){
+nums+=i+"<br>";
+}
+
+document.getElementById("lines").innerHTML=nums;
+
+runCode();
+
+}
+
+window.onload=function(){
+
+document.getElementById("html").value=localStorage.getItem("html")||"";
+document.getElementById("css").value=localStorage.getItem("css")||"";
+document.getElementById("js").value=localStorage.getItem("js")||"";
+
+runCode();
+
+}
+
+</script>
+
+</body>
+</html>
